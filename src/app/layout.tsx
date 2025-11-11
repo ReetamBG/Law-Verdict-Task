@@ -42,7 +42,7 @@ export default async function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <RootNavbar />
+          <RootNavbar session={session} />
           {children}
         </ThemeProvider>
       </body>

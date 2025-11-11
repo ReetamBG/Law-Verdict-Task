@@ -1,4 +1,5 @@
 "use client";
+import { removeSession } from "@/actions/user.actions";
 import {
   Navbar,
   NavBody,
@@ -11,9 +12,11 @@ import {
   MobileNavMenu,
 } from "@/components/ui/resizable-navbar";
 import { useUser } from "@auth0/nextjs-auth0";
+import { SessionData } from "@auth0/nextjs-auth0/types";
+import { redirect } from "next/navigation";
 import { useState } from "react";
 
-export default function RootNavbar() {
+export default function RootNavbar({session} :{session: SessionData | null}) {
   const navItems = [
     {
       name: "About",
@@ -30,7 +33,7 @@ export default function RootNavbar() {
   ];
 
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const { user } = useUser();
+  // const { user } = useUser();
 
   return (
     <div className="absolute z-99 w-full backdrop-blur-xl">
@@ -40,7 +43,8 @@ export default function RootNavbar() {
           <NavbarLogo />
           <NavItems items={navItems} />
           <div className="flex items-center gap-4">
-            {!user ? (
+            {/* {!user ? ( */}
+            {!session ? (
               <NavbarButton
                 href="/auth/login"
                 variant="primary"
@@ -50,9 +54,12 @@ export default function RootNavbar() {
               </NavbarButton>
             ) : (
               <NavbarButton
-                href="/auth/logout"
                 variant="primary"
                 className="text-sm 2xl:text-lg"
+                onClick={async () => {
+                  await removeSession(session!)
+                  redirect("/auth/logout");
+                }}
               >
                 Signout
               </NavbarButton>
