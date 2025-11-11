@@ -1,6 +1,5 @@
 import { getDbUserByAuth0Id, syncAuth0UserToDb } from "@/actions/user.actions";
 import CompleteProfileForm from "@/components/CompleteProfileForm";
-import { DbNull } from "@/generated/prisma/internal/prismaNamespace";
 import { auth0 } from "@/lib/auth0";
 import { redirect, RedirectType } from "next/navigation";
 import React from "react";
@@ -11,9 +10,11 @@ const Dashboard = async () => {
     redirect("/auth/login", RedirectType.replace);
   }
 
-  const res = await getDbUserByAuth0Id(session.user.name!);
+  console.log(session)
+
+  const res = await getDbUserByAuth0Id(session.user.sub!);
   if (!res.status) {
-    await syncAuth0UserToDb(session.user.name!);
+    await syncAuth0UserToDb(session.user.sub!);
     // sync auth0 user with db not here maybe better to do in navbar where it only happens once
   }
 
