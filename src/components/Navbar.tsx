@@ -33,7 +33,7 @@ export default function RootNavbar() {
   const { user } = useUser();
 
   return (
-    <div className="absolute z-99 w-full">
+    <div className="absolute z-99 w-full backdrop-blur-xl">
       <Navbar>
         {/* Desktop Navigation */}
         <NavBody>
