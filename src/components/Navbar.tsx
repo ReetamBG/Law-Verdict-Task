@@ -10,15 +10,14 @@ import {
   MobileNavToggle,
   MobileNavMenu,
 } from "@/components/ui/resizable-navbar";
-import { auth0 } from "@/lib/auth0";
-import { SessionData } from "@auth0/nextjs-auth0/types";
-import { useEffect, useState } from "react";
+import { useUser } from "@auth0/nextjs-auth0";
+import { useState } from "react";
 
 export default function RootNavbar() {
   const navItems = [
     {
-      name: "Features",
-      link: "#features",
+      name: "About",
+      link: "#about",
     },
     {
       name: "Pricing",
@@ -31,14 +30,7 @@ export default function RootNavbar() {
   ];
 
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [session, setSession] = useState<SessionData | null>(null);
-
-  useEffect(() => {
-    (async () => {
-      const res = await auth0.getSession();
-      setSession(res);
-    })();
-  }, []);
+  const { user } = useUser();
 
   return (
     <div className="absolute z-99 w-full">
@@ -48,7 +40,7 @@ export default function RootNavbar() {
           <NavbarLogo />
           <NavItems items={navItems} />
           <div className="flex items-center gap-4">
-            {!session ? (
+            {!user ? (
               <NavbarButton
                 href="/auth/login"
                 variant="primary"

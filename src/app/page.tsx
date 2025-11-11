@@ -20,9 +20,9 @@ export default async function Home() {
       <div
         className={cn(
           "absolute inset-0",
-          "[background-size:40px_40px] 2xl:[background-size:80px_80px]",
+          "[background-size:60px_60px] 2xl:[background-size:80px_80px]",
           "[background-image:linear-gradient(to_right,#e4e4e7_1px,transparent_1px),linear-gradient(to_bottom,#e4e4e7_1px,transparent_1px)]",
-          "dark:[background-image:linear-gradient(to_right,#1c1c1c_1px,transparent_1px),linear-gradient(to_bottom,#1c1c1c_1px,transparent_1px)]"
+          "dark:[background-image:linear-gradient(to_right,#1e1e1e_1px,transparent_1px),linear-gradient(to_bottom,#1e1e1e_1px,transparent_1px)]"
         )}
       />
       {/* Radial gradient for the container to give a faded look */}
