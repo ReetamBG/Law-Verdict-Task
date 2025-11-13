@@ -11,12 +11,14 @@ import {
   MobileNavToggle,
   MobileNavMenu,
 } from "@/components/ui/resizable-navbar";
-import { useUser } from "@auth0/nextjs-auth0";
 import { SessionData } from "@auth0/nextjs-auth0/types";
-import { redirect } from "next/navigation";
 import { useState } from "react";
 
-export default function RootNavbar({session} :{session: SessionData | null}) {
+export default function RootNavbar({
+  session,
+}: {
+  session: SessionData | null;
+}) {
   const navItems = [
     {
       name: "About",
@@ -33,7 +35,13 @@ export default function RootNavbar({session} :{session: SessionData | null}) {
   ];
 
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  // const { user } = useUser();
+  const handleSignout = async () => {
+    console.log("Signing out...");
+    const res = await removeSession(session!);
+      if (res.status) {
+        window.location.href = "/auth/logout";
+      }
+  };
 
   return (
     <div className="absolute z-99 w-full backdrop-blur-xl">
@@ -56,10 +64,7 @@ export default function RootNavbar({session} :{session: SessionData | null}) {
               <NavbarButton
                 variant="primary"
                 className="text-sm 2xl:text-lg"
-                onClick={async () => {
-                  await removeSession(session!)
-                  redirect("/auth/logout");
-                }}
+                onClick={handleSignout}
               >
                 Signout
               </NavbarButton>

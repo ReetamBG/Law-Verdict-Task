@@ -4,7 +4,7 @@ import "./globals.css";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import RootNavbar from "@/components/Navbar";
 import { auth0 } from "@/lib/auth0";
-import { validateSession } from "@/actions/user.actions";
+import { removeSession, validateSession } from "@/actions/user.actions";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -26,10 +26,11 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-
   const session = await auth0.getSession();
-  const res = await validateSession(session!);
-  console.log("Session validation result in layout:", res);
+
+  if (session) {
+    const res = await validateSession(session!);
+  }
 
   return (
     <html lang="en" suppressHydrationWarning>

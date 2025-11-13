@@ -65,6 +65,7 @@ export async function validateSession(sessionInfo: SessionData) {
 
 export async function removeSession(sessionInfo: SessionData) {
   try {
+    console.log("Removing session started");
     const auth0Id = sessionInfo.user.sub; // auth0 user id
     const sessionId = sessionInfo.internal.sid; // session id (unique to each login session and device)
 
@@ -82,18 +83,28 @@ export async function removeSession(sessionInfo: SessionData) {
 
     const sessionExists = user.sessions.includes(sessionId);
     if (!sessionExists) {
+      console.log("Session ID not found in user's active sessions");
       throw new Error("Session not found for user");
     }
 
     // Remove the session from the user's active sessions
     const updatedSessions = user.sessions.filter((sid) => sid !== sessionId);
-
+    console.log("Updated sessions after filtering:", updatedSessions);
+    
     const res = await prisma.user.update({
       where: { auth0Id },
       data: {
         sessions: updatedSessions,
       },
     });
+
+    console.log("Session removal result:", res);
+    const user2 = await prisma.user.findUnique({
+      where: { auth0Id },
+    });
+    console.log("Updated sessions after removal:", user2?.sessions);
+    
+    console.log("Session removed successfully for user:", auth0Id);
 
     return {
       status: true,
