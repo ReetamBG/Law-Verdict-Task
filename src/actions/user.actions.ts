@@ -30,14 +30,19 @@ export async function validateSession(sessionInfo: SessionData) {
         status: true,
         message: "Session already validated",
         data: user,
+        sessionConflict: false,
       };
     }
 
-    // If sessions are full and current session doesn't exist, block login
+    // If sessions are full and current session doesn't exist, return conflict info
     if (user.sessions.length >= 3) {
-      throw new Error(
-        "Maximum active sessions reached. Please log out from another device."
-      );
+      return {
+        status: false,
+        message: "Maximum active sessions reached. Please log out from another device.",
+        data: user,
+        sessionConflict: true,
+        activeSessions: user.sessions,
+      };
     }
 
     // If new session and space left then add it to the array
@@ -54,6 +59,7 @@ export async function validateSession(sessionInfo: SessionData) {
       status: true,
       message: "Session validated and updated",
       data: res,
+      sessionConflict: false,
     };
   } catch (error) {
     console.error("Session validation error:", error);
@@ -122,6 +128,59 @@ export async function removeSession(sessionInfo: SessionData) {
     return {
       status: false,
       message: error,
+    };
+  }
+}
+
+export async function forceLogoutSession(auth0Id: string, sessionIdToRemove: string, currentSessionId: string) {
+  try {
+    console.log("Force logout session started");
+    
+    if (!auth0Id || !sessionIdToRemove || !currentSessionId) {
+      throw new Error("Invalid parameters: Missing required IDs");
+    }
+
+    // Don't allow force logout of current session
+    if (sessionIdToRemove === currentSessionId) {
+      throw new Error("Cannot force logout current session");
+    }
+
+    const user = await prisma.user.findUnique({
+      where: { auth0Id },
+    });
+
+    if (!user) {
+      throw new Error("User not found");
+    }
+
+    const sessionExists = user.sessions.includes(sessionIdToRemove);
+    if (!sessionExists) {
+      throw new Error("Session to remove not found in user's active sessions");
+    }
+
+    // Remove the target session and add current session
+    const updatedSessions = user.sessions.filter((sid) => sid !== sessionIdToRemove);
+    updatedSessions.push(currentSessionId);
+    
+    const res = await prisma.user.update({
+      where: { auth0Id },
+      data: {
+        sessions: updatedSessions,
+      },
+    });
+
+    console.log("Force logout successful, sessions updated:", res.sessions);
+
+    return {
+      status: true,
+      message: "Session force logged out successfully",
+      data: res,
+    };
+  } catch (error) {
+    console.error("Force logout error:", error);
+    return {
+      status: false,
+      message: error instanceof Error ? error.message : "Unknown error",
     };
   }
 }

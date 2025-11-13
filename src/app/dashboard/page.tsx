@@ -1,8 +1,11 @@
 import {
   getDbUserByAuth0Id,
   syncAuth0UserToDb,
+  validateSession,
 } from "@/actions/user.actions";
+import ActiveSessionsCard from "@/components/ActiveSessionsCard";
 import CompleteProfileForm from "@/components/CompleteProfileForm";
+import SessionConflictWrapper from "@/components/SessionConflictWrapper";
 import { auth0 } from "@/lib/auth0";
 import { redirect, RedirectType } from "next/navigation";
 import React from "react";
@@ -22,28 +25,53 @@ const Dashboard = async () => {
 
   const dbUser = res.data;
 
+  // Check for session conflict
+  const validationResult = await validateSession(session);
+  const hasSessionConflict = validationResult.sessionConflict === true;
+
   return (
-    <section className="min-h-screen w-full flex justify-center pt-30">
-      {dbUser?.isProfileComplete ? (
-        <div className="text-center space-y-4">
-          <h1 className="text-4xl 2xl:text-5xl font-bold text-primary">
-            Welcome to your Dashboard!
-          </h1>
-          <div className="text-lg 2xl:text-xl text-muted-foreground">
-            <p>
-              Hello, {dbUser?.firstName} {dbUser?.lastName}
-            </p>
-            <p>Phone: {dbUser?.phoneNo}</p>
-            <p>You are logged in as {session.user.name}</p>
-            <p>Current active devices: {dbUser.sessions.length}</p>
-            <p>Session: {dbUser.sessions}</p>
-          </div>
-        </div>
-      ) : (
-        <div className="flex flex-col items-center space-y-6">
-          <CompleteProfileForm userId={dbUser?.id} />
-        </div>
+    <section className="min-h-screen w-full flex justify-center items-center pt-20 pb-10 px-4">
+      {hasSessionConflict && (
+        <SessionConflictWrapper
+          activeSessions={validationResult.activeSessions || []}
+          currentSessionId={session.internal.sid}
+          auth0Id={session.user.sub!}
+        />
       )}
+
+      <div className="w-full max-w-4xl">
+        {dbUser?.isProfileComplete ? (
+          <div className="space-y-8">
+            <div className="text-center space-y-4">
+              <h1 className="text-4xl 2xl:text-5xl font-bold text-primary">
+                Welcome, {dbUser?.firstName}!
+              </h1>
+              <div className="text-lg 2xl:text-xl text-muted-foreground space-y-2">
+                <p className="font-semibold">
+                  {dbUser?.firstName} {dbUser?.lastName}
+                </p>
+                <p className="text-base 2xl:text-lg">
+                  Phone: {dbUser?.phoneNo}
+                </p>
+                <p className="text-sm 2xl:text-base text-muted-foreground/70">
+                  Logged in as {session.user.email}
+                </p>
+              </div>
+            </div>
+            
+            <div className="flex justify-center">
+              <ActiveSessionsCard
+                sessions={dbUser.sessions}
+                currentSessionId={session.internal.sid}
+              />
+            </div>
+          </div>
+        ) : (
+          <div className="flex flex-col items-center space-y-6">
+            <CompleteProfileForm userId={dbUser?.id} />
+          </div>
+        )}
+      </div>
     </section>
   );
 };

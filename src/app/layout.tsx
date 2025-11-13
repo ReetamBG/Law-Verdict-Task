@@ -4,8 +4,9 @@ import "./globals.css";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import RootNavbar from "@/components/Navbar";
 import { auth0 } from "@/lib/auth0";
-import { validateSession } from "@/actions/user.actions";
+import { getDbUserByAuth0Id, validateSession } from "@/actions/user.actions";
 import { cookies } from "next/headers";
+import { redirect } from "next/navigation";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -33,7 +34,22 @@ export default async function RootLayout({
 
   // Don't validate session if user is logging out
   if (session && !isLoggingOut) {
-    await validateSession(session!);
+    const validationResult = await validateSession(session!);
+    
+    // If session validation failed and it's not a conflict, check if session was force-logged-out
+    if (!validationResult.status && !validationResult.sessionConflict) {
+      // Check if current session is in the user's active sessions
+      const userResult = await getDbUserByAuth0Id(session.user.sub!);
+      if (userResult.status && userResult.data) {
+        const currentSessionId = session.internal.sid;
+        const isSessionActive = userResult.data.sessions.includes(currentSessionId);
+        
+        // If session is not in active sessions, user was force-logged-out
+        if (!isSessionActive) {
+          redirect("/force-logout");
+        }
+      }
+    }
   }
 
   return (
