@@ -2,6 +2,7 @@
 
 import prisma from "@/lib/prisma";
 import { SessionData } from "@auth0/nextjs-auth0/types";
+import { cookies } from "next/headers";
 
 export async function validateSession(sessionInfo: SessionData) {
   try {
@@ -66,6 +67,11 @@ export async function validateSession(sessionInfo: SessionData) {
 export async function removeSession(sessionInfo: SessionData) {
   try {
     console.log("Removing session started");
+    
+    // Set a cookie to prevent re-validation during logout
+    const cookieStore = await cookies();
+    cookieStore.set("logging_out", "true", { maxAge: 5 }); // 5 seconds should be enough
+    
     const auth0Id = sessionInfo.user.sub; // auth0 user id
     const sessionId = sessionInfo.internal.sid; // session id (unique to each login session and device)
 
