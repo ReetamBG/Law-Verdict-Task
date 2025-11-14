@@ -62,11 +62,6 @@ const SessionConflictClient = ({
     }
   };
 
-  const handleCancelLogin = () => {
-    // Redirect to logout to cancel current login attempt
-    window.location.href = "/auth/logout";
-  };
-
   return (
     <section className="min-h-screen w-full flex items-center justify-center p-4">
       <Card className="w-full max-w-2xl">
@@ -78,8 +73,8 @@ const SessionConflictClient = ({
             Maximum Active Sessions Reached
           </CardTitle>
           <CardDescription className="text-base 2xl:text-lg">
-            You&apos;ve reached the maximum of 3 active sessions. Please select a
-            device to log out from, or cancel this login.
+            You have reached the maximum of 3 active sessions. Please select a
+            device to log out from to continue.
           </CardDescription>
         </CardHeader>
 
@@ -127,30 +122,20 @@ const SessionConflictClient = ({
             </p>
           </div>
 
-          <div className="flex flex-col sm:flex-row gap-3">
-            <Button
-              variant="outline"
-              onClick={handleCancelLogin}
-              disabled={isLoading}
-              className="w-full sm:flex-1"
-            >
-              Cancel Login
-            </Button>
-            <Button
-              onClick={handleForceLogout}
-              disabled={!selectedSession || isLoading}
-              className="w-full sm:flex-1"
-            >
-              {isLoading ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 2xl:h-5 2xl:w-5 animate-spin" />
-                  Logging Out...
-                </>
-              ) : (
-                "Force Logout & Continue"
-              )}
-            </Button>
-          </div>
+          <Button
+            onClick={handleForceLogout}
+            disabled={!selectedSession || isLoading}
+            className="w-full"
+          >
+            {isLoading ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 2xl:h-5 2xl:w-5 animate-spin" />
+                Logging Out...
+              </>
+            ) : (
+              "Force Logout & Continue"
+            )}
+          </Button>
         </CardContent>
       </Card>
     </section>

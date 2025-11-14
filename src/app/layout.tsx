@@ -4,7 +4,7 @@ import "./globals.css";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import RootNavbar from "@/components/Navbar";
 import { auth0 } from "@/lib/auth0";
-import { getDbUserByAuth0Id, validateSession } from "@/actions/user.actions";
+import { validateSession } from "@/actions/user.actions";
 import { cookies, headers } from "next/headers";
 import { redirect } from "next/navigation";
 
@@ -34,32 +34,16 @@ export default async function RootLayout({
   
   // Get current pathname to avoid redirect loops
   const headersList = await headers();
-  const pathname = headersList.get("x-pathname") || headersList.get("referer") || "";
+  const pathname = headersList.get("x-pathname") || "";
   const isSessionConflictPage = pathname.includes("/session-conflict");
-  const isForceLogoutPage = pathname.includes("/force-logout");
 
-  // Don't validate session if user is logging out or already on conflict/logout pages
-  if (session && !isLoggingOut && !isSessionConflictPage && !isForceLogoutPage) {
+  // Don't validate session if user is logging out or already on session conflict page
+  if (session && !isLoggingOut && !isSessionConflictPage) {
     const validationResult = await validateSession(session!);
     
-    // If session conflict (N+1), redirect to session conflict page
+    // If session conflict (N+1) or session not in DB, redirect to session conflict page
     if (validationResult.sessionConflict) {
       redirect("/session-conflict");
-    }
-    
-    // If session validation failed and it's not a conflict, check if session was force-logged-out
-    if (!validationResult.status && !validationResult.sessionConflict) {
-      // Check if current session is in the user's active sessions
-      const userResult = await getDbUserByAuth0Id(session.user.sub!);
-      if (userResult.status && userResult.data) {
-        const currentSessionId = session.internal.sid;
-        const isSessionActive = userResult.data.sessions.includes(currentSessionId);
-        
-        // If session is not in active sessions, user was force-logged-out
-        if (!isSessionActive) {
-          redirect("/force-logout");
-        }
-      }
     }
   }
 
