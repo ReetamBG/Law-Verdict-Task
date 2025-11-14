@@ -4,10 +4,12 @@ import prisma from "@/lib/prisma";
 import { SessionData } from "@auth0/nextjs-auth0/types";
 import { cookies } from "next/headers";
 
+const MAX_DEVICES = parseInt(process.env.NEXT_PUBLIC_MAX_DEVICES || "3", 10);
+
 export async function validateSession(sessionInfo: SessionData) {
   try {
-    const auth0Id = sessionInfo.user.sub; // auth0 user id
-    const sessionId = sessionInfo.internal.sid; // session id (unique to each login session and device)
+    const auth0Id = sessionInfo.user.sub;
+    const sessionId = sessionInfo.internal.sid;
 
     if (!auth0Id || !sessionId) {
       throw new Error("Invalid session: Missing auth0Id or sessionId");
@@ -21,8 +23,6 @@ export async function validateSession(sessionInfo: SessionData) {
       throw new Error("User not found");
     }
 
-    // Check if current session already exists
-    // If session already exists, allow normal login
     const sessionExists = user.sessions.includes(sessionId);
 
     if (sessionExists) {
@@ -34,8 +34,7 @@ export async function validateSession(sessionInfo: SessionData) {
       };
     }
 
-    // If sessions are full and current session doesn't exist, return conflict info
-    if (user.sessions.length >= 3) {
+    if (user.sessions.length >= MAX_DEVICES) {
       return {
         status: false,
         message: "Maximum active sessions reached. Please log out from another device.",
@@ -45,7 +44,6 @@ export async function validateSession(sessionInfo: SessionData) {
       };
     }
 
-    // If new session and space left then add it to the array
     const updatedSessions = [...user.sessions, sessionId];
 
     const res = await prisma.user.update({
@@ -72,14 +70,11 @@ export async function validateSession(sessionInfo: SessionData) {
 
 export async function removeSession(sessionInfo: SessionData) {
   try {
-    console.log("Removing session started");
-    
-    // Set a cookie to prevent re-validation during logout
     const cookieStore = await cookies();
-    cookieStore.set("logging_out", "true", { maxAge: 5 }); // 5 seconds should be enough
+    cookieStore.set("logging_out", "true", { maxAge: 5 });
     
-    const auth0Id = sessionInfo.user.sub; // auth0 user id
-    const sessionId = sessionInfo.internal.sid; // session id (unique to each login session and device)
+    const auth0Id = sessionInfo.user.sub;
+    const sessionId = sessionInfo.internal.sid;
 
     if (!auth0Id || !sessionId) {
       throw new Error("Invalid session: Missing auth0Id or sessionId");
@@ -95,13 +90,10 @@ export async function removeSession(sessionInfo: SessionData) {
 
     const sessionExists = user.sessions.includes(sessionId);
     if (!sessionExists) {
-      console.log("Session ID not found in user's active sessions");
       throw new Error("Session not found for user");
     }
 
-    // Remove the session from the user's active sessions
     const updatedSessions = user.sessions.filter((sid) => sid !== sessionId);
-    console.log("Updated sessions after filtering:", updatedSessions);
     
     const res = await prisma.user.update({
       where: { auth0Id },
@@ -109,14 +101,6 @@ export async function removeSession(sessionInfo: SessionData) {
         sessions: updatedSessions,
       },
     });
-
-    console.log("Session removal result:", res);
-    const user2 = await prisma.user.findUnique({
-      where: { auth0Id },
-    });
-    console.log("Updated sessions after removal:", user2?.sessions);
-    
-    console.log("Session removed successfully for user:", auth0Id);
 
     return {
       status: true,
@@ -134,13 +118,10 @@ export async function removeSession(sessionInfo: SessionData) {
 
 export async function forceLogoutSession(auth0Id: string, sessionIdToRemove: string, currentSessionId: string) {
   try {
-    console.log("Force logout session started");
-    
     if (!auth0Id || !sessionIdToRemove || !currentSessionId) {
       throw new Error("Invalid parameters: Missing required IDs");
     }
 
-    // Don't allow force logout of current session
     if (sessionIdToRemove === currentSessionId) {
       throw new Error("Cannot force logout current session");
     }
@@ -158,7 +139,6 @@ export async function forceLogoutSession(auth0Id: string, sessionIdToRemove: str
       throw new Error("Session to remove not found in user's active sessions");
     }
 
-    // Remove the target session and add current session
     const updatedSessions = user.sessions.filter((sid) => sid !== sessionIdToRemove);
     updatedSessions.push(currentSessionId);
     
@@ -168,8 +148,6 @@ export async function forceLogoutSession(auth0Id: string, sessionIdToRemove: str
         sessions: updatedSessions,
       },
     });
-
-    console.log("Force logout successful, sessions updated:", res.sessions);
 
     return {
       status: true,

@@ -3,6 +3,8 @@ import { getDbUserByAuth0Id } from "@/actions/user.actions";
 import { redirect } from "next/navigation";
 import SessionConflictClient from "./SessionConflictClient";
 
+const MAX_DEVICES = parseInt(process.env.NEXT_PUBLIC_MAX_DEVICES || "3", 10);
+
 export default async function SessionConflictPage() {
   const session = await auth0.getSession();
   
@@ -21,8 +23,8 @@ export default async function SessionConflictPage() {
   const currentSessionId = session.internal.sid;
   const auth0Id = session.user.sub!;
 
-  // If user has less than 3 sessions, redirect to dashboard
-  if (activeSessions.length < 3) {
+  // If user has less than MAX_DEVICES sessions, redirect to dashboard
+  if (activeSessions.length < MAX_DEVICES) {
     redirect("/dashboard");
   }
 

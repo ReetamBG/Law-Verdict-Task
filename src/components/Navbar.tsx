@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/resizable-navbar";
 import { SessionData } from "@auth0/nextjs-auth0/types";
 import { useState } from "react";
+import { toast } from "sonner";
 
 export default function RootNavbar({
   session,
@@ -35,12 +36,17 @@ export default function RootNavbar({
   ];
 
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  
   const handleSignout = async () => {
-    console.log("Signing out...");
     const res = await removeSession(session!);
-      if (res.status) {
+    if (res.status) {
+      toast.success("Logged out successfully");
+      setTimeout(() => {
         window.location.href = "/auth/logout";
-      }
+      }, 500);
+    } else {
+      toast.error("Failed to logout");
+    }
   };
 
   return (
@@ -51,7 +57,6 @@ export default function RootNavbar({
           <NavbarLogo />
           <NavItems items={navItems} />
           <div className="flex items-center gap-4">
-            {/* {!user ? ( */}
             {!session ? (
               <NavbarButton
                 href="/auth/login"
@@ -97,20 +102,27 @@ export default function RootNavbar({
               </a>
             ))}
             <div className="flex w-full flex-col gap-4">
-              <NavbarButton
-                onClick={() => setIsMobileMenuOpen(false)}
-                variant="primary"
-                className="w-full"
-              >
-                Login
-              </NavbarButton>
-              <NavbarButton
-                onClick={() => setIsMobileMenuOpen(false)}
-                variant="primary"
-                className="w-full"
-              >
-                Book a call
-              </NavbarButton>
+              {!session ? (
+                <NavbarButton
+                  href="/auth/login"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  variant="primary"
+                  className="w-full"
+                >
+                  Signin
+                </NavbarButton>
+              ) : (
+                <NavbarButton
+                  onClick={async () => {
+                    setIsMobileMenuOpen(false);
+                    await handleSignout();
+                  }}
+                  variant="primary"
+                  className="w-full"
+                >
+                  Signout
+                </NavbarButton>
+              )}
             </div>
           </MobileNavMenu>
         </MobileNav>

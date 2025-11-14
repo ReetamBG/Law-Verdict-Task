@@ -14,6 +14,7 @@ import { Button } from "./ui/button";
 import { updateUserProfile } from "@/actions/user.actions";
 import { useRouter } from "next/navigation";
 import { LoaderCircle } from "lucide-react";
+import { toast } from "sonner";
 
 interface FormData {
   firstName: string;
@@ -102,11 +103,14 @@ const CompleteProfileForm = ({ userId }: { userId: string | undefined }) => {
       });
 
       if (result.status) {
-        router.refresh(); // Refresh the page to show updated state
+        toast.success("Profile completed successfully!");
+        router.refresh();
       } else {
+        toast.error("Failed to update profile");
         setErrors({ firstName: "Failed to update profile. Please try again." });
       }
     } catch {
+      toast.error("An error occurred");
       setErrors({ firstName: "An error occurred. Please try again." });
     } finally {
       setIsSubmitting(false);

@@ -7,6 +7,7 @@ import { auth0 } from "@/lib/auth0";
 import { validateSession } from "@/actions/user.actions";
 import { cookies, headers } from "next/headers";
 import { redirect } from "next/navigation";
+import { Toaster } from "@/components/ui/sonner";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -32,16 +33,13 @@ export default async function RootLayout({
   const cookieStore = await cookies();
   const isLoggingOut = cookieStore.get("logging_out");
   
-  // Get current pathname to avoid redirect loops
   const headersList = await headers();
   const pathname = headersList.get("x-pathname") || "";
   const isSessionConflictPage = pathname.includes("/session-conflict");
 
-  // Don't validate session if user is logging out or already on session conflict page
   if (session && !isLoggingOut && !isSessionConflictPage) {
     const validationResult = await validateSession(session!);
     
-    // If session conflict (N+1) or session not in DB, redirect to session conflict page
     if (validationResult.sessionConflict) {
       redirect("/session-conflict");
     }
@@ -60,6 +58,7 @@ export default async function RootLayout({
         >
           <RootNavbar session={session} />
           {children}
+          <Toaster richColors />
         </ThemeProvider>
       </body>
     </html>

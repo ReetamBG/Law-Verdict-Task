@@ -9,14 +9,6 @@ export default async function Home() {
 
   return (
     <section className="relative flex h-screen w-full items-center justify-center bg-white dark:bg-black">
-      {/* <div
-        className={cn(
-          "absolute inset-0",
-          "[background-size:40px_40px]",
-          "[background-image:radial-gradient(#d4d4d4_1px,transparent_1px)]",
-          "dark:[background-image:radial-gradient(#404040_1.2px,transparent_1.2px)]"
-        )}
-      /> */}
       <div
         className={cn(
           "absolute inset-0",
@@ -25,7 +17,6 @@ export default async function Home() {
           "dark:[background-image:linear-gradient(to_right,#1e1e1e_1px,transparent_1px),linear-gradient(to_bottom,#1e1e1e_1px,transparent_1px)]"
         )}
       />
-      {/* Radial gradient for the container to give a faded look */}
       <div className="pointer-events-none absolute inset-0 flex items-center justify-center bg-white [mask-image:radial-gradient(ellipse_at_center,transparent_20%,black)] dark:bg-black"></div>
       <div className="max-w-2xl md:max-w-5xl mx-auto p-4">
         <h1 className="relative z-10 text-lg md:text-7xl 2xl:text-8xl bg-clip-text text-primary text-center font-sans font-bold">
@@ -39,7 +30,7 @@ export default async function Home() {
           {!session ? (
             <a href="/auth/login">
               <Button>
-                Sigin to continue{" "}
+                Sign in to continue{" "}
                 <ArrowRightCircle className="size-4 2xl:size-6" />
               </Button>
             </a>

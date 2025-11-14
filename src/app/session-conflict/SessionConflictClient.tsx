@@ -13,6 +13,9 @@ import { Badge } from "@/components/ui/badge";
 import { forceLogoutSession } from "@/actions/user.actions";
 import { Laptop, Smartphone, Monitor, Loader2, AlertCircle } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
+
+const MAX_DEVICES = parseInt(process.env.NEXT_PUBLIC_MAX_DEVICES || "3", 10);
 
 interface SessionConflictClientProps {
   activeSessions: string[];
@@ -47,16 +50,16 @@ const SessionConflictClient = ({
       );
 
       if (result.status) {
-        // Success - redirect to dashboard
+        toast.success("Device logged out successfully");
         router.push("/dashboard");
         router.refresh();
       } else {
+        toast.error("Failed to logout device");
         console.error("Failed to force logout:", result.message);
-        alert("Failed to logout the selected device. Please try again.");
       }
     } catch (error) {
+      toast.error("An error occurred");
       console.error("Error during force logout:", error);
-      alert("An error occurred. Please try again.");
     } finally {
       setIsLoading(false);
     }
@@ -73,7 +76,7 @@ const SessionConflictClient = ({
             Maximum Active Sessions Reached
           </CardTitle>
           <CardDescription className="text-base 2xl:text-lg">
-            You have reached the maximum of 3 active sessions. Please select a
+            You have reached the maximum of {MAX_DEVICES} active sessions. Please select a
             device to log out from to continue.
           </CardDescription>
         </CardHeader>
@@ -81,7 +84,7 @@ const SessionConflictClient = ({
         <CardContent className="space-y-6">
           <div className="space-y-3">
             <p className="text-sm 2xl:text-base font-medium">
-              Active Sessions ({activeSessions.length}/3):
+              Active Sessions ({activeSessions.length}/{MAX_DEVICES}):
             </p>
             <div className="space-y-2">
               {activeSessions.map((session, index) => (

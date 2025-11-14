@@ -11,6 +11,8 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Laptop, Monitor, Smartphone } from "lucide-react";
 
+const MAX_DEVICES = parseInt(process.env.NEXT_PUBLIC_MAX_DEVICES || "3", 10);
+
 interface ActiveSessionsCardProps {
   sessions: string[];
   currentSessionId: string;
@@ -53,10 +55,9 @@ const ActiveSessionsCard = ({
                   <div>
                     <p className="font-medium text-sm 2xl:text-base">
                       Device {index + 1}
-                      {isCurrentSession && " (This device)"}
                     </p>
                     <p className="text-xs 2xl:text-sm text-muted-foreground">
-                      Session: {session.substring(0, 16)}...
+                      {/* SessionId: {session.substring(0, 16)}... */}
                     </p>
                   </div>
                 </div>
@@ -72,8 +73,8 @@ const ActiveSessionsCard = ({
         
         <div className="mt-4 rounded-lg border border-blue-200 dark:border-blue-900 bg-blue-50 dark:bg-blue-950/30 p-3">
           <p className="text-xs 2xl:text-sm text-blue-900 dark:text-blue-100">
-            <strong>Note:</strong> You can have up to 3 active sessions. When you
-            log in from a 4th device, you&apos;ll need to select a device to log out
+            <strong>Note:</strong> You can have up to {MAX_DEVICES} active sessions. When you
+            log in from a {MAX_DEVICES + 1}th device, you&apos;ll need to select a device to log out
             from.
           </p>
         </div>

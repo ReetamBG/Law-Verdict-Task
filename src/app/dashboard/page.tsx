@@ -1,9 +1,7 @@
-import {
-  getDbUserByAuth0Id,
-  syncAuth0UserToDb,
-} from "@/actions/user.actions";
+import { getDbUserByAuth0Id, syncAuth0UserToDb } from "@/actions/user.actions";
 import ActiveSessionsCard from "@/components/ActiveSessionsCard";
 import CompleteProfileForm from "@/components/CompleteProfileForm";
+import { WelcomeToast } from "@/components/WelcomeToast";
 import { auth0 } from "@/lib/auth0";
 import { redirect, RedirectType } from "next/navigation";
 import React from "react";
@@ -25,6 +23,7 @@ const Dashboard = async () => {
 
   return (
     <section className="min-h-screen w-full flex justify-center items-center pt-20 pb-10 px-4">
+      <WelcomeToast userName={dbUser?.firstName || undefined} />
       <div className="w-full max-w-4xl">
         {dbUser?.isProfileComplete ? (
           <div className="space-y-8">
@@ -32,6 +31,9 @@ const Dashboard = async () => {
               <h1 className="text-4xl 2xl:text-5xl font-bold text-primary">
                 Welcome, {dbUser?.firstName}!
               </h1>
+              <p className="text-sm 2xl:text-base text-muted-foreground/70">
+                Logged in as {session.user.email}
+              </p>
               <div className="text-lg 2xl:text-xl text-muted-foreground space-y-2">
                 <p className="font-semibold">
                   {dbUser?.firstName} {dbUser?.lastName}
@@ -39,12 +41,9 @@ const Dashboard = async () => {
                 <p className="text-base 2xl:text-lg">
                   Phone: {dbUser?.phoneNo}
                 </p>
-                <p className="text-sm 2xl:text-base text-muted-foreground/70">
-                  Logged in as {session.user.email}
-                </p>
               </div>
             </div>
-            
+
             <div className="flex justify-center">
               <ActiveSessionsCard
                 sessions={dbUser.sessions}
