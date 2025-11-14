@@ -209,6 +209,56 @@ export async function syncAuth0UserToDb(auth0Id: string) {
   }
 }
 
+export async function addSessionToUser(auth0Id: string, sessionId: string) {
+  try {
+    const user = await prisma.user.findUnique({
+      where: { auth0Id },
+    });
+
+    if (!user) {
+      throw new Error("User not found");
+    }
+
+    // Check if session already exists
+    if (user.sessions.includes(sessionId)) {
+      return {
+        status: true,
+        message: "Session already exists",
+        data: user,
+      };
+    }
+
+    // Check if user has space for new session
+    if (user.sessions.length >= 3) {
+      return {
+        status: false,
+        message: "Maximum sessions reached",
+        data: user,
+      };
+    }
+
+    // Add the new session
+    const updatedUser = await prisma.user.update({
+      where: { auth0Id },
+      data: {
+        sessions: [...user.sessions, sessionId],
+      },
+    });
+
+    return {
+      status: true,
+      message: "Session added successfully",
+      data: updatedUser,
+    };
+  } catch (error) {
+    console.error("Add session error:", error);
+    return {
+      status: false,
+      message: error instanceof Error ? error.message : "Unknown error",
+    };
+  }
+}
+
 export async function getDbUserByAuth0Id(auth0Id: string) {
   try {
     const user = await prisma.user.findUnique({

@@ -5,7 +5,7 @@ import { ThemeProvider } from "@/components/ThemeProvider";
 import RootNavbar from "@/components/Navbar";
 import { auth0 } from "@/lib/auth0";
 import { getDbUserByAuth0Id, validateSession } from "@/actions/user.actions";
-import { cookies } from "next/headers";
+import { cookies, headers } from "next/headers";
 import { redirect } from "next/navigation";
 
 const geistSans = Geist({
@@ -31,10 +31,21 @@ export default async function RootLayout({
   const session = await auth0.getSession();
   const cookieStore = await cookies();
   const isLoggingOut = cookieStore.get("logging_out");
+  
+  // Get current pathname to avoid redirect loops
+  const headersList = await headers();
+  const pathname = headersList.get("x-pathname") || headersList.get("referer") || "";
+  const isSessionConflictPage = pathname.includes("/session-conflict");
+  const isForceLogoutPage = pathname.includes("/force-logout");
 
-  // Don't validate session if user is logging out
-  if (session && !isLoggingOut) {
+  // Don't validate session if user is logging out or already on conflict/logout pages
+  if (session && !isLoggingOut && !isSessionConflictPage && !isForceLogoutPage) {
     const validationResult = await validateSession(session!);
+    
+    // If session conflict (N+1), redirect to session conflict page
+    if (validationResult.sessionConflict) {
+      redirect("/session-conflict");
+    }
     
     // If session validation failed and it's not a conflict, check if session was force-logged-out
     if (!validationResult.status && !validationResult.sessionConflict) {

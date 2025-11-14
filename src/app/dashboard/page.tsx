@@ -1,11 +1,9 @@
 import {
   getDbUserByAuth0Id,
   syncAuth0UserToDb,
-  validateSession,
 } from "@/actions/user.actions";
 import ActiveSessionsCard from "@/components/ActiveSessionsCard";
 import CompleteProfileForm from "@/components/CompleteProfileForm";
-import SessionConflictWrapper from "@/components/SessionConflictWrapper";
 import { auth0 } from "@/lib/auth0";
 import { redirect, RedirectType } from "next/navigation";
 import React from "react";
@@ -25,20 +23,8 @@ const Dashboard = async () => {
 
   const dbUser = res.data;
 
-  // Check for session conflict
-  const validationResult = await validateSession(session);
-  const hasSessionConflict = validationResult.sessionConflict === true;
-
   return (
     <section className="min-h-screen w-full flex justify-center items-center pt-20 pb-10 px-4">
-      {hasSessionConflict && (
-        <SessionConflictWrapper
-          activeSessions={validationResult.activeSessions || []}
-          currentSessionId={session.internal.sid}
-          auth0Id={session.user.sub!}
-        />
-      )}
-
       <div className="w-full max-w-4xl">
         {dbUser?.isProfileComplete ? (
           <div className="space-y-8">
