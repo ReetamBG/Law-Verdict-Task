@@ -32,9 +32,10 @@ const ActiveSessionsCard = ({
     <Card className="w-full max-w-2xl">
       <CardHeader>
         <CardTitle className="text-xl 2xl:text-2xl">Active Sessions</CardTitle>
-        <CardDescription className="text-sm 2xl:text-base">
+        <CardDescription className="text-sm 2xl:text-base text-primary">
           You are currently logged in on {sessions.length} device
-          {sessions.length !== 1 ? "s" : ""}
+          {sessions.length !== 1 ? "s" : ""}<br/><br/>
+          <span className="text-muted-foreground">Refresh page if not updated</span>
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -57,7 +58,7 @@ const ActiveSessionsCard = ({
                       Device {index + 1}
                     </p>
                     <p className="text-xs 2xl:text-sm text-muted-foreground">
-                      {/* SessionId: {session.substring(0, 16)}... */}
+                      SessionId: {session.substring(0, 16)}...
                     </p>
                   </div>
                 </div>

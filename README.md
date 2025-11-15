@@ -12,7 +12,7 @@ When a device is force logged out, it shows a message explaining what happened.
 
 The app has two pages:
 - Public landing page
-- Private dashboard (shows user's full name and phone number)
+- Private dashboard (shows user's full name, phone number and active sessions)
 
 ## How It Works
 
@@ -135,5 +135,5 @@ src/
 
 ## Links
 
-- **Live Application**: [Add your deployed URL here]
+- **Live Application**: https://law-and-verdict-task.vercel.app/
 - **GitHub Repository**: https://github.com/ReetamBG/Law-Verdict-Task

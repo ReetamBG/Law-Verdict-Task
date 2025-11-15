@@ -20,7 +20,11 @@ export async function validateSession(sessionInfo: SessionData) {
     });
 
     if (!user) {
-      throw new Error("User not found");
+      // throw new Error("User not found");
+      return {
+        status: false,
+        message: "User not found",
+      };
     }
 
     const sessionExists = user.sessions.includes(sessionId);
@@ -112,6 +116,24 @@ export async function removeSession(sessionInfo: SessionData) {
     return {
       status: false,
       message: error,
+    };
+  }
+}
+
+export async function setLoggingOutCookie() {
+  try {
+    const cookieStore = await cookies();
+    cookieStore.set("logging_out", "true", { maxAge: 10 });
+    
+    return {
+      status: true,
+      message: "Cookie set successfully",
+    };
+  } catch (error) {
+    console.error("Error setting cookie:", error);
+    return {
+      status: false,
+      message: error instanceof Error ? error.message : "Unknown error",
     };
   }
 }

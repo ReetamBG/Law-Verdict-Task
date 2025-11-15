@@ -10,8 +10,14 @@ import {
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { forceLogoutSession } from "@/actions/user.actions";
-import { Laptop, Smartphone, Monitor, Loader2, AlertCircle } from "lucide-react";
+import { forceLogoutSession, setLoggingOutCookie } from "@/actions/user.actions";
+import {
+  Laptop,
+  Smartphone,
+  Monitor,
+  Loader2,
+  AlertCircle,
+} from "lucide-react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 
@@ -65,6 +71,13 @@ const SessionConflictClient = ({
     }
   };
 
+  const handleCancelLogin = async () => {
+    // Set the logging_out cookie to prevent redirect loops
+    await setLoggingOutCookie();
+    // Redirect to Auth0 logout, which will log out from this device
+    window.location.href = "/auth/logout";
+  };
+
   return (
     <section className="min-h-screen w-full flex items-center justify-center p-4">
       <Card className="w-full max-w-2xl">
@@ -76,8 +89,8 @@ const SessionConflictClient = ({
             Maximum Active Sessions Reached
           </CardTitle>
           <CardDescription className="text-base 2xl:text-lg">
-            You have reached the maximum of {MAX_DEVICES} active sessions. Please select a
-            device to log out from to continue.
+            You have reached the maximum of {MAX_DEVICES} active sessions.
+            Please select a device to log out from to continue.
           </CardDescription>
         </CardHeader>
 
@@ -125,20 +138,30 @@ const SessionConflictClient = ({
             </p>
           </div>
 
-          <Button
-            onClick={handleForceLogout}
-            disabled={!selectedSession || isLoading}
-            className="w-full"
-          >
-            {isLoading ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 2xl:h-5 2xl:w-5 animate-spin" />
-                Logging Out...
-              </>
-            ) : (
-              "Force Logout & Continue"
-            )}
-          </Button>
+          <div className="flex flex-col sm:flex-row gap-3">
+            <Button
+              variant="outline"
+              onClick={handleCancelLogin}
+              disabled={isLoading}
+              className="flex-1"
+            >
+              Cancel Login
+            </Button>
+            <Button
+              onClick={handleForceLogout}
+              disabled={!selectedSession || isLoading}
+              className="flex-1"
+            >
+              {isLoading ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 2xl:h-5 2xl:w-5 animate-spin" />
+                  Logging Out...
+                </>
+              ) : (
+                "Force Logout & Continue"
+              )}
+            </Button>
+          </div>
         </CardContent>
       </Card>
     </section>
