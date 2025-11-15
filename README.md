@@ -4,11 +4,9 @@ A Next.js application that limits users to N concurrent login sessions (N=3). Us
 
 ## What This Project Does
 
-Users can only be logged in on 3 devices at once. When they try to log in on a 4th device, they must either:
+Users can only be logged in on 3 devices (limit set in .env) at once. When they try to log in on a 4th device, they must either:
 - Cancel the login
 - Force logout one of the existing sessions
-
-When a device is force logged out, it shows a message explaining what happened.
 
 The app has two pages:
 - Public landing page
@@ -41,16 +39,10 @@ If a user tries to log in on a 4th device:
 When a device gets force logged out:
 
 1. Its session ID is removed from the database
-2. Next time that device makes a request, middleware checks the database
+2. Next time that device makes a request, the application checks the active sessions in database
 3. Session ID is not found, so the device is logged out
-4. User sees a message explaining they were logged out from another device
+4. User sees a message explaining that maximum sessions are reached so they can either force log out from other device and continue or cancel login on current device
 
-### Technical Details
-
-- Sessions are stored as an array of strings in PostgreSQL
-- Middleware checks every request against the database
-- Server actions handle adding/removing sessions
-- Max devices configured via `NEXT_PUBLIC_MAX_DEVICES` environment variable
 
 ## Technology Stack
 
@@ -87,7 +79,7 @@ cd Law-Verdict-Task
 npm install
 ```
 
-3. Set up environment variables in `.env.local`
+3. Set up environment variables in `.env` from `.env.example`
 
 4. Run database migrations:
 ```bash
@@ -120,18 +112,8 @@ The application uses a single User model:
 All free tier:
 - Auth0 (authentication)
 - Vercel (hosting)
-- Vercel Postgres (database)
+- NeonDB Postgres (database)
 
-## Project Structure
-
-```
-src/
-├── actions/          # Server actions for database operations
-├── app/              # Next.js app router pages
-├── components/       # React components
-├── lib/              # Utility functions and configurations
-└── middleware.ts     # Authentication middleware
-```
 
 ## Links
 
